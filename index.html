@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#080b12">
+<title>NOIR PIANO</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#080b12;--panel:#111827;--panel2:#172132;--gold:#d8b779;
+  --gold2:#f1d8a7;--muted:#9aa7ba;--line:#2b374a;--white:#f7f4ed;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--white);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{background:radial-gradient(ellipse at 50% -15%,#26364d 0%,#101827 38%,#080b12 75%);
+  overscroll-behavior:none}
+button,select,input{font:inherit}
+.app{max-width:1050px;margin:auto;padding:calc(18px + env(safe-area-inset-top)) 14px calc(24px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.brand{font-size:11px;letter-spacing:.28em;font-weight:800;color:var(--gold)}
+.status{font-size:10px;letter-spacing:.12em;color:var(--muted)}
+h1{font-size:clamp(30px,7vw,52px);letter-spacing:-.05em;line-height:1;margin:0;font-weight:700}
+.subtitle{color:var(--muted);font-size:13px;margin:9px 0 22px}
+.panel{border:1px solid var(--line);border-radius:22px;padding:14px;
+  background:linear-gradient(145deg,rgba(27,38,56,.96),rgba(13,18,29,.98));
+  box-shadow:0 22px 70px #0008}
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+button,select{border:1px solid #3a4960;border-radius:12px;background:#202c40;color:#f4f5f7;
+  padding:11px 13px;font-size:12px;font-weight:700;min-height:42px}
+button:active{transform:scale(.97)}
+button.active{border-color:var(--gold);background:#493c29;color:var(--gold2)}
+button:disabled{opacity:.4}
+.spacer{flex:1}
+.small-label{font-size:10px;letter-spacing:.13em;color:var(--muted)}
+input[type=range]{width:90px;accent-color:var(--gold)}
+select{max-width:160px}
+.piano-shell{overflow-x:auto;overflow-y:hidden;border-radius:15px;background:#05070c;
+  padding:12px 10px 10px;touch-action:pan-x;scrollbar-color:#47546b #111722;scrollbar-width:thin}
+.keyboard{height:230px;min-width:900px;position:relative;display:flex;user-select:none;
+  -webkit-user-select:none;touch-action:pan-x}
+.key{position:relative;cursor:pointer;touch-action:pan-x}
+.white{height:230px;flex:1;z-index:1;border:1px solid #aeb4bf;border-radius:0 0 8px 8px;
+  background:linear-gradient(90deg,#cfd3da 0%,#fff 17%,#f5f3ed 76%,#c6cad2 100%);
+  box-shadow:inset 0 -7px 0 #c3c7cf,0 3px 5px #0009}
+.white.pressed{background:linear-gradient(90deg,#bda77f,#f0dfbf 45%,#c9b58f);
+  transform:translateY(2px);box-shadow:inset 0 -3px 0 #a68c5e}
+.black{position:absolute;top:0;width:4.3%;height:139px;z-index:3;border:1px solid #02040a;
+  border-radius:0 0 7px 7px;background:linear-gradient(90deg,#05070b,#303847 40%,#10151e 85%,#030509);
+  box-shadow:0 7px 12px #000b}
+.black.pressed{height:142px;background:linear-gradient(90deg,#5a472b,#c2a06a 45%,#3e301e)}
+.key-name{position:absolute;bottom:9px;left:0;right:0;text-align:center;font-size:9px;
+  color:#778294;pointer-events:none}
+.black .key-name{bottom:7px;color:#a7b0bd;font-size:8px}
+.readout{display:flex;justify-content:space-between;gap:10px;align-items:center;
+  margin-top:13px;color:var(--muted);font-size:11px;flex-wrap:wrap}
+.note-value{color:var(--gold2);font-weight:800}
+.actions{display:flex;gap:7px;flex-wrap:wrap}
+.actions button{padding:9px 11px;min-height:38px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}
+.card{background:#111a28;border:1px solid #263448;border-radius:14px;padding:12px}
+.card b{display:block;color:var(--gold);font-size:9px;letter-spacing:.15em;margin-bottom:5px}
+.card span{font-size:11px;color:#b3bdcb;line-height:1.4}
+footer{text-align:center;color:#66758a;font-size:9px;letter-spacing:.16em;margin-top:20px}
+#message{min-height:17px;margin-top:9px;color:var(--gold2);font-size:11px}
+@media(max-width:560px){
+ .app{padding-left:11px;padding-right:11px}
+ .panel{padding:11px}
+ .keyboard{height:205px}
+ .white{height:205px}
+ .black{height:124px}
+ .black.pressed{height:127px}
+ .cards{grid-template-columns:1fr 1fr}
+ input[type=range]{width:74px}
+}
+</style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <div class="brand">NOIR / INSTRUMENTS</div>
+    <div class="status">TOUCH PIANO · V2.0</div>
+  </header>
+  <h1>NOIR PIANO</h1>
+  <p class="subtitle">A quiet room. An endless piano.</p>
+
+  <section class="panel">
+    <div class="toolbar">
+      <button id="octDown" aria-label="Lower octave">− OCT</button>
+      <span class="small-label" id="octLabel">OCTAVE 4</span>
+      <button id="octUp" aria-label="Raise octave">+ OCT</button>
+      <span class="spacer"></span>
+      <button id="sustain">SUSTAIN OFF</button>
+      <button id="soundTest" class="active">TEST SOUND</button>
+    </div>
+
+    <div class="toolbar">
+      <span class="small-label">VOLUME</span>
+      <input id="volume" type="range" min="0" max="100" value="72" aria-label="Volume">
+      <span class="small-label">TONE</span>
+      <select id="tone" aria-label="Piano tone">
+        <option value="grand">Concert Grand</option>
+        <option value="felt">Soft Felt</option>
+        <option value="bright">Bright Stage</option>
+      </select>
+      <span class="spacer"></span>
+      <button id="record">● REC</button>
+      <button id="play">▶ PLAY</button>
+    </div>
+
+    <div class="piano-shell" id="pianoShell">
+      <div class="keyboard" id="keyboard" aria-label="Piano keyboard"></div>
+    </div>
+
+    <div class="readout">
+      <div>NOTE <span class="note-value" id="lastNote">—</span></div>
+      <div class="actions">
+        <button id="clear">CLEAR</button>
+        <button id="metro">METRONOME OFF</button>
+      </div>
+    </div>
+    <div id="message" aria-live="polite">Tap TEST SOUND once if your iPhone is silent.</div>
+  </section>
+
+  <section class="cards">
+    <div class="card"><b>TOUCH</b><span>Tap or hold keys to play notes</span></div>
+    <div class="card"><b>RANGE</b><span>Three octaves with octave shift</span></div>
+    <div class="card"><b>PERFORMANCE</b><span>Sustain, record and replay</span></div>
+  </section>
+  <footer>DESIGNED FOR HEADPHONES · SOUND STARTS AFTER YOUR FIRST TAP</footer>
+</main>
+
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const noteNames = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  let octave = 4, audio = null, master = null, compressor = null;
+  let sustain = false, recording = false, recorded = [], recordStart = 0;
+  let active = new Map(), sustainedVoices = [], metroTimer = null, metroOn = false;
+  let playbackTimers = [];
+
+  function ensureAudio() {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) {
+      $("message").textContent = "This browser does not support Web Audio. Open in Safari.";
+      return false;
+    }
+    if (!audio) {
+      audio = new AudioContextClass();
+      master = audio.createGain();
+      master.gain.value = Number($("volume").value) / 100;
+      compressor = audio.createDynamicsCompressor();
+      compressor.threshold.value = -18;
+      compressor.knee.value = 18;
+      compressor.ratio.value = 3;
+      compressor.attack.value = 0.004;
+      compressor.release.value = 0.22;
+      master.connect(compressor);
+      compressor.connect(audio.destination);
+    }
+    if (audio.state === "suspended") audio.resume();
+    return true;
+  }
+
+  function midiFrequency(midi) {
+    return 440 * Math.pow(2, (midi - 69) / 12);
+  }
+  function noteLabel(midi) {
+    return noteNames[midi % 12] + (Math.floor(midi / 12) - 1);
+  }
+
+  function makeVoice(midi, velocity = 0.8) {
+    if (!ensureAudio()) return { stop() {} };
+    const now = audio.currentTime;
+    const fundamental = midiFrequency(midi);
+    const mode = $("tone").value;
+    const voiceGain = audio.createGain();
+    const filter = audio.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(mode === "felt" ? 2400 : mode === "bright" ? 8500 : 5600, now);
+    filter.Q.value = 0.45;
+    voiceGain.gain.setValueAtTime(0.0001, now);
+    voiceGain.gain.exponentialRampToValueAtTime(Math.max(0.0002, velocity * 0.22), now + 0.012);
+    voiceGain.gain.exponentialRampToValueAtTime(Math.max(0.0001, velocity * 0.105), now + 0.22);
+    voiceGain.connect(filter);
+    filter.connect(master);
+
+    const partials = mode === "felt"
+      ? [1,0.24,0.07,0.018]
+      : mode === "bright" ? [1,0.52,0.25,0.12,0.055,0.02]
+      : [1,0.38,0.16,0.075,0.032,0.012];
+    const oscillators = [];
+    partials.forEach((amplitude, index) => {
+      const osc = audio.createOscillator();
+      const partialGain = audio.createGain();
+      const partialNumber = index + 1;
+      osc.type = "sine";
+      // Slightly inharmonic upper partials make the tone less like a plain beep.
+      osc.frequency.setValueAtTime(fundamental * partialNumber * (1 + (partialNumber > 2 ? 0.00035 * partialNumber : 0)), now);
+      partialGain.gain.value = amplitude / Math.pow(partialNumber, 0.72);
+      osc.connect(partialGain);
+      partialGain.connect(voiceGain);
+      osc.start(now);
+      oscillators.push(osc);
+    });
+
+    // A very short, quiet hammer transient adds a piano-like attack.
+    const transient = audio.createOscillator();
+    const transientGain = audio.createGain();
+    transient.type = "triangle";
+    transient.frequency.setValueAtTime(fundamental * 3.1, now);
+    transientGain.gain.setValueAtTime(0.018 * velocity, now);
+    transientGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
+    transient.connect(transientGain);
+    transientGain.connect(master);
+    transient.start(now);
+    transient.stop(now + 0.04);
+
+    let stopped = false;
+    return {
+      stop() {
+        if (stopped || !audio) return;
+        stopped = true;
+        const t = audio.currentTime;
+        voiceGain.gain.cancelScheduledValues(t);
+        voiceGain.gain.setTargetAtTime(0.0001, t, 0.16);
+        oscillators.forEach(osc => { try { osc.stop(t + 0.7); } catch (_) {} });
+      }
+    };
+  }
+
+  function midiFor(index) { return (octave + 1) * 12 + index; }
+
+  function buildKeyboard() {
+    const keyboard = $("keyboard");
+    keyboard.innerHTML = "";
+    const whiteMidi = [];
+    for (let i = 0; i < 36; i++) {
+      const midi = midiFor(i);
+      if (noteNames[midi % 12].includes("#")) continue;
+      whiteMidi.push(midi);
+      const key = document.createElement("div");
+      key.className = "key white";
+      key.dataset.midi = midi;
+      key.innerHTML = '<span class="key-name">' + noteLabel(midi) + '</span>';
+      keyboard.appendChild(key);
+    }
+    let whiteIndex = 0;
+    for (let i = 0; i < 36; i++) {
+      const midi = midiFor(i);
+      if (!noteNames[midi % 12].includes("#")) {
+        whiteIndex++;
+        continue;
+      }
+      const key = document.createElement("div");
+      key.className = "key black";
+      key.dataset.midi = midi;
+      key.style.left = "calc(" + (whiteIndex / 21 * 100) + "% - 2.15%)";
+      key.innerHTML = '<span class="key-name">' + noteLabel(midi) + '</span>';
+      keyboard.appendChild(key);
+    }
+    keyboard.style.minWidth = window.innerWidth < 560 ? "850px" : "900px";
+    $("octLabel").textContent = "OCTAVE " + octave;
+  }
+
+  function pressKey(element, velocity = 0.8) {
+    const midi = Number(element.dataset.midi);
+    if (active.has(midi)) return;
+    const voice = makeVoice(midi, velocity);
+    active.set(midi, { voice, element });
+    element.classList.add("pressed");
+    $("lastNote").textContent = noteLabel(midi);
+    if (recording) recorded.push({ midi, time: performance.now() - recordStart });
+  }
+
+  function releaseKey(midi) {
+    const item = active.get(midi);
+    if (!item) return;
+    active.delete(midi);
+    item.element.classList.remove("pressed");
+    if (sustain) sustainedVoices.push(item.voice);
+    else item.voice.stop();
+  }
+
+  const keyboard = $("keyboard");
+  keyboard.addEventListener("pointerdown", event => {
+    const key = event.target.closest(".key");
+    if (!key) return;
+    event.preventDefault();
+    pressKey(key);
+  });
+  window.addEventListener("pointerup", () => [...active.keys()].forEach(releaseKey));
+  window.addEventListener("pointercancel", () => [...active.keys()].forEach(releaseKey));
+  window.addEventListener("blur", () => [...active.keys()].forEach(releaseKey));
+
+  $("octDown").addEventListener("click", () => {
+    if (octave > 2) { octave--; buildKeyboard(); }
+  });
+  $("octUp").addEventListener("click", () => {
+    if (octave < 6) { octave++; buildKeyboard(); }
+  });
+
+  $("sustain").addEventListener("click", () => {
+    sustain = !sustain;
+    $("sustain").textContent = "SUSTAIN " + (sustain ? "ON" : "OFF");
+    $("sustain").classList.toggle("active", sustain);
+    if (!sustain) {
+      sustainedVoices.forEach(voice => voice.stop());
+      sustainedVoices = [];
+    }
+  });
+
+  $("soundTest").addEventListener("click", () => {
+    if (!ensureAudio()) return;
+    const voice = makeVoice(69, 1);
+    window.setTimeout(() => voice.stop(), 1100);
+    $("message").textContent = "Sound is ready. Tap the piano keys.";
+  });
+
+  $("volume").addEventListener("input", event => {
+    if (master) master.gain.setTargetAtTime(Number(event.target.value) / 100, audio.currentTime, 0.02);
+  });
+
+  $("record").addEventListener("click", () => {
+    if (!recording) {
+      recorded = [];
+      recordStart = performance.now();
+      recording = true;
+      $("record").textContent = "■ STOP";
+      $("record").classList.add("active");
+      $("message").textContent = "Recording… play a few notes, then press STOP.";
+    } else {
+      recording = false;
+      $("record").textContent = "● REC";
+      $("record").classList.remove("active");
+      $("message").textContent = recorded.length ? "Recording saved. Press PLAY." : "No notes recorded yet.";
+    }
+  });
+
+  $("play").addEventListener("click", () => {
+    if (!recorded.length) {
+      $("message").textContent = "Record some notes first.";
+      return;
+    }
+    if (!ensureAudio()) return;
+    playbackTimers.forEach(clearTimeout);
+    playbackTimers = [];
+    const sequence = recorded.slice();
+    sequence.forEach(note => {
+      const timer = setTimeout(() => {
+        const voice = makeVoice(note.midi, 0.72);
+        setTimeout(() => voice.stop(), 520);
+        $("lastNote").textContent = noteLabel(note.midi);
+      }, note.time);
+      playbackTimers.push(timer);
+    });
+    $("message").textContent = "Playing your recording…";
+  });
+
+  $("clear").addEventListener("click", () => {
+    recorded = [];
+    recording = false;
+    playbackTimers.forEach(clearTimeout);
+    playbackTimers = [];
+    $("record").textContent = "● REC";
+    $("record").classList.remove("active");
+    $("message").textContent = "Recording cleared.";
+  });
+
+  $("metro").addEventListener("click", () => {
+    metroOn = !metroOn;
+    $("metro").textContent = "METRONOME " + (metroOn ? "ON" : "OFF");
+    $("metro").classList.toggle("active", metroOn);
+    if (metroTimer) clearInterval(metroTimer);
+    if (metroOn && ensureAudio()) {
+      metroTimer = setInterval(() => {
+        const osc = audio.createOscillator();
+        const gain = audio.createGain();
+        const now = audio.currentTime;
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(1050, now);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
+        osc.connect(gain);
+        gain.connect(master);
+        osc.start(now);
+        osc.stop(now + 0.06);
+      }, 600);
+    }
+  });
+
+  buildKeyboard();
+})();
+</script>
+</body>
+</html>
